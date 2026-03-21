@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Word Trainer - 日文學習</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        :root {
+            --primary: #3b82f6; --success: #10b981; --error: #ef4444; --hint: #f59e0b;
+            --bg: #0f172a; --card-bg: rgba(30, 41, 59, 0.7); --text: #f8fafc;
+            --sub-text: #94a3b8; --nav-bg: rgba(15, 23, 42, 0.9);
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background: var(--bg); color: var(--text); margin: 0; 
+            overflow: hidden; -webkit-font-smoothing: antialiased;
+        }
+        
+        .page { display: none; width: 100%; height: 100vh; flex-direction: column; background: var(--bg); }
+        .page.active { display: flex; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 導覽列 */
+        .nav-bar { 
+            display: flex; justify-content: space-around; background: var(--nav-bg); 
+            padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.05); 
+            position: fixed; bottom: 0; width: 100%; z-index: 100; backdrop-filter: blur(15px);
+        }
+        .nav-item { color: var(--sub-text); font-size: 12px; border: none; background: none; transition: 0.2s; outline: none; }
+        .nav-item.active { color: var(--primary); font-weight: 700; transform: scale(1.1); }
+
+        .card {
+            background: var(--card-bg); margin: 10px 15px; padding: 18px; 
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* 測驗 UI */
+        .quiz-header { padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .progress-container { width: 90%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; margin-bottom: 15px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), #60a5fa); width: 0%; transition: width 0.4s; }
+        
+        #q-kanji { font-size: 1.8em; color: var(--primary); font-weight: 800; min-height: 1.2em; text-align: center; text-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+        #q-chinese { font-size: 2.2em; font-weight: 700; margin: 10px 0; text-align: center; }
+        
+        .slots { display: flex; gap: 8px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
+        .slot { 
+            width: 38px; height: 50px; background: #1e293b; border-radius: 12px; 
+            font-size: 1.5em; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .native-input { 
+            background: #1e293b; border: 2px solid transparent; color: #fff; 
+            padding: 15px; width: 80%; border-radius: 16px; font-size: 20px; 
+            text-align: center; transition: 0.3s; display: block; margin: 0 auto;
+        }
+        .native-input:focus { border-color: var(--primary); outline: none; background: #0f172a; }
+
+        .btn-main { 
+            background: var(--primary); color: white; border: none; padding: 16px 32px; 
+            border-radius: 16px; font-weight: 700; font-size: 16px; transition: 0.2s;
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+        .btn-main:active { transform: scale(0.96); }
+        
+        .sq-btn { 
+            background: #1e293b; color: var(--sub-text); border: none; 
+            padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600;
+        }
+        .sq-btn.active { background: var(--primary); color: #fff; }
+
+        /* 清單列表 */
+        .word-card { 
+            padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); 
+            display: flex; align-items: center; gap: 12px;
+        }
+        .word-info b { font-size: 1.1em; color: var(--primary); }
+        .text-action { font-size: 12px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border: none; padding: 8px 14px; border-radius: 10px; margin-left: 4px; font-weight: 600; }
+        .text-action.del { color: var(--error); background: rgba(239, 68, 68, 0.1); }
+
+        .star-btn { font-size: 28px; background: none; border: none; color: #334155; cursor: pointer; }
+        .star-btn.active { color: var(--hint); transform: scale(1.1); }
+
+        /* 設定頁開關 */
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="page-home" class="page active">
+        <h2 style="padding: 30px 20px 10px 20px; font-size: 24px;">學習中心</h2>
+        <div id="home-book-list" style="flex:1; overflow-y:auto;"></div>
+        
+        <div class="card" style="margin-bottom: 100px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <button id="mode-spell" class="sq-btn active" style="flex:1" onclick="setMode('spell')">拼字練習</button>
+                <button id="mode-recognize" class="sq-btn" style="flex:1" onclick="setMode('recognize')">認字練習</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="order-default" class="sq-btn active" style="flex:1" onclick="setOrder('default')">預設順序</button>
+                <button id="order-random" class="sq-btn" style="flex:1" onclick="setOrder('random')">隨機順序</button>
+            </div>
+            <button class="btn-main" style="width:100%" onclick="startQuiz()">開始練習</button>
+        </div>
+    </div>
+
+    <div id="page-quiz" class="page">
+        <div class="quiz-header">
+            <div class="progress-container"><div id="p-bar" class="progress-bar"></div></div>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-auto-speak" class="sq-btn" onclick="toggleQuizConfig('autoSpeak')">🔊 自動朗讀</button>
+                <button id="btn-show-cn" class="sq-btn active" onclick="toggleQuizConfig('showChinese')">中文</button>
+                <button id="btn-show-kj" class="sq-btn active" onclick="toggleQuizConfig('showKanji')">漢字</button>
+            </div>
+        </div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 100px;">
+            <div id="q-result" style="height:35px; font-weight:700; font-size:1.2em;"></div> 
+            <div id="q-kanji"></div>
+            <div id="q-chinese"></div>
+            <button id="quiz-star" class="star-btn" onclick="toggleCurrentStar()">☆</button>
+
+            <div id="spell-container" style="width:100%; display:none; flex-direction:column; align-items:center;">
+                <div id="slotContainer" class="slots"></div>
+                <input type="text" id="nativeInput" class="native-input" placeholder="請輸入假名..." oninput="onNativeInput(this)">
+                <button class="btn-main" style="margin-top:25px; width:80%;" onclick="handleManualCheck()">檢查答案</button>
+            </div>
+
+            <div id="recognize-container" style="width:100%; display:none; flex-direction:column; align-items:center;">
+                <div id="optionsGrid" class="options-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; width:90%;"></div>
+            </div>
+
+            <div style="display:flex; gap:15px; margin-top:35px;">
+                <button onclick="useHint()" class="sq-btn" style="padding:12px 24px;">💡 提示</button>
+                <button onclick="speakCurrent()" class="sq-btn" style="padding:12px 24px;">🔊 朗讀</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-list" class="page">
+        <div style="padding: 20px; background: var(--bg); position: sticky; top:0; z-index:10;">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin:0">所有單字</h3>
+                <button class="sq-btn" id="edit-mode-btn" onclick="toggleEditMode()">選取模式</button>
+            </div>
+            <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px;">
+                <button id="filter-star" class="sq-btn" onclick="toggleStarredFilter()">★ 收藏</button>
+                <div id="list-book-filter" style="display:flex; gap:8px;"></div>
+            </div>
+        </div>
+        <div id="list-container" style="flex:1; overflow-y:auto; padding-bottom:100px;"></div>
+        
+        <div id="batch-bar" style="display:none; position:fixed; bottom:80px; left:20px; right:20px; background:var(--primary); border-radius:18px; padding:16px; justify-content:space-around; z-index:101; box-shadow:0 15px 35px rgba(0,0,0,0.4);">
+            <button onclick="batchDelete()" style="background:none; border:none; color:white; font-weight:700;">🗑️ 刪除</button>
+            <button onclick="batchMove()" style="background:none; border:none; color:white; font-weight:700;">📂 移動</button>
+        </div>
+    </div>
+
+    <div id="page-import" class="page">
+        <h3 style="padding: 20px;">資料管理</h3>
+        <div class="card">
+            <select id="import-book-select" style="width:100%; padding:14px; background:#1e293b; color:#fff; border-radius:14px; border:none; margin-bottom:15px;"></select>
+            <textarea id="import-area" placeholder="格式：單字/假名/中文" style="width:100%; height:180px; background:#0f172a; border-radius:14px; border:1px solid #334155; color:#fff; padding:12px; box-sizing:border-box; font-size:14px;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-main" style="flex:1; padding:12px;" onclick="doImport()">匯入資料</button>
+                <button class="sq-btn" onclick="doExport()">匯出此本</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-settings" class="page">
+        <h3 style="padding: 20px;">系統設定</h3>
+        <div class="card">
+            <div class="setting-item">
+                <span>答對時震動</span>
+                <input type="checkbox" id="set-vibrate" onchange="updateSetting('vibrate', this.checked)" style="width:20px; height:20px;">
+            </div>
+            <div class="setting-item" style="border:none">
+                <span style="color:var(--error)">危險區域</span>
+                <button class="sq-btn" style="color:var(--error); border:1px solid var(--error);" onclick="confirmClearData()">清空所有資料庫</button>
+            </div>
+        </div>
+        <p style="text-align:center; color:var(--sub-text); font-size:12px; margin-top:auto; padding-bottom:100px;">Version 18.1 Modern | Haptic Support</p>
+    </div>
+
+    <div class="nav-bar">
+        <button class="nav-item active" onclick="showPage('home')">首頁</button>
+        <button class="nav-item" onclick="showPage('quiz')">測驗</button>
+        <button class="nav-item" onclick="showPage('list')">清單</button>
+        <button class="nav-item" onclick="showPage('import')">匯入</button>
+        <button class="nav-item" onclick="showPage('settings')">設定</button>
+    </div>
+</div>
+
+<script>
+    // 註冊 Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+        });
+    }
+
+    let db = JSON.parse(localStorage.getItem('jp_v18_db')) || { 
+        books: ["預設單字本"], words: [],
+        config: { quizOrder: 'default', quizMode: 'spell', autoSpeak: false, showChinese: true, showKanji: true, vibrate: true } 
+    };
+    function save() { localStorage.setItem('jp_v18_db', JSON.stringify(db)); }
+
+    let currentFilter = '全部';
+    let isEditMode = false;
+    let starredOnly = false;
+
+    // --- 震動與語音系統 ---
+    function triggerVibrate() {
+        if (db.config.vibrate && navigator.vibrate) {
+            navigator.vibrate(50);
+        }
+    }
+
+    function speak(text) {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'ja-JP'; msg.rate = 0.95;
+        window.speechSynthesis.speak(msg);
+    }
+
+    // --- 測驗引擎 ---
+    let quizSet = [], qIdx = 0, qInput = "", currentPool = [], currentOptions = [];
+
+    function startQuiz() {
+        const checked = Array.from(document.querySelectorAll('.book-chk:checked')).map(i => i.value);
+        if(!checked.length) return alert("請勾選單字本");
+        currentPool = db.words.filter(w => checked.includes(w.book));
+        quizSet = [...currentPool];
+        if(db.config.quizOrder === 'random') quizSet.sort(() => Math.random() - 0.5);
+        qIdx = 0; showPage('quiz'); loadQ();
+    }
+
+    function loadQ() {
+        if(qIdx >= quizSet.length) { alert("測驗結束！做得好！"); showPage('home'); return; }
+        const w = quizSet[qIdx];
+        document.getElementById('q-kanji').innerText = db.config.showKanji ? w.display : "";
+        document.getElementById('q-chinese').innerText = db.config.showChinese ? w.meaning : "";
+        document.getElementById('q-result').innerText = ""; 
+        document.getElementById('p-bar').style.width = (qIdx / quizSet.length * 100) + "%";
+        
+        const starBtn = document.getElementById('quiz-star');
+        starBtn.innerText = w.starred ? "★" : "☆";
+        starBtn.classList.toggle('active', !!w.starred);
+
+        if(db.config.autoSpeak) speak(w.kana);
+
+        if (db.config.quizMode === 'spell') {
+            document.getElementById('spell-container').style.display = 'flex';
+            document.getElementById('recognize-container').style.display = 'none';
+            qInput = ""; document.getElementById('nativeInput').value = ""; renderSlots();
+        } else {
+            document.getElementById('spell-container').style.display = 'none';
+            document.getElementById('recognize-container').style.display = 'flex';
+            renderOptions();
+        }
+    }
+
+    function onNativeInput(el) { qInput = el.value; renderSlots(); }
+    function renderSlots() {
+        const w = quizSet[qIdx];
+        document.getElementById('slotContainer').innerHTML = new Array(w.kana.length).fill(0).map((_,i) => `<div class="slot">${qInput[i] || ""}</div>`).join('');
+    }
+
+    function handleManualCheck() {
+        const w = quizSet[qIdx];
+        if (qInput === w.kana) {
+            triggerVibrate();
+            document.getElementById('q-result').innerText = "正解！✨";
+            document.getElementById('q-result').style.color = "var(--success)";
+            setTimeout(() => { qIdx++; loadQ(); }, 600);
+        } else {
+            document.getElementById('q-result').innerText = "錯誤";
+            document.getElementById('q-result').style.color = "var(--error)";
+            setTimeout(() => { document.getElementById('q-result').innerText = ""; }, 800);
+        }
+    }
+
+    function renderOptions() {
+        const w = quizSet[qIdx];
+        const grid = document.getElementById('optionsGrid');
+        let distractors = currentPool.filter(item => item.kana !== w.kana).sort(() => Math.random() - 0.5);
+        currentOptions = [w, ...distractors.slice(0, 3)].sort(() => Math.random() - 0.5);
+        grid.innerHTML = currentOptions.map((opt, i) => `<button class="option-btn" style="background:#1e293b; border:1px solid #334155; color:white; padding:18px; border-radius:14px; font-weight:600;" onclick="checkOption(${i}, this)">${opt.kana}</button>`).join('');
+    }
+
+    function checkOption(idx, btn) {
+        if (currentOptions[idx].kana === quizSet[qIdx].kana) {
+            triggerVibrate();
+            btn.style.background = "var(--success)";
+            setTimeout(() => { qIdx++; loadQ(); }, 500);
+        } else {
+            btn.style.background = "var(--error)";
+            setTimeout(() => { btn.style.background = "#1e293b"; }, 500);
+        }
+    }
+
+    function toggleStarredFilter() { starredOnly = !starredOnly; document.getElementById('filter-star').classList.toggle('active', starredOnly); renderList(); }
+
+    function renderList() {
+        const container = document.getElementById('list-container');
+        let words = db.words.map((w, i) => ({...w, originalIdx: i}));
+        if (currentFilter !== '全部') words = words.filter(w => w.book === currentFilter);
+        if (starredOnly) words = words.filter(w => w.starred);
+        
+        container.innerHTML = words.map(w => `
+            <div class="word-card">
+                <input type="checkbox" class="batch-chk" value="${w.originalIdx}" style="display:${isEditMode?'block':'none'}; width:22px; height:22px;">
+                <span class="star-btn ${w.starred?'active':''}" style="font-size:24px" onclick="toggleListStar(${w.originalIdx})">${w.starred?'★':'☆'}</span>
+                <div class="word-info" style="flex:1">
+                    <b>${w.display}</b> <small style="color:var(--sub-text); margin-left:5px;">${w.kana}</small><br>
+                    <span style="font-size:13px; color:var(--sub-text); line-height:20px;">${w.meaning}</span>
+                </div>
+                <div class="word-ops" style="display:${isEditMode?'none':'flex'}">
+                    <button class="text-action" onclick="speak('${w.kana}')">發音</button>
+                    <button class="text-action" onclick="editWord(${w.originalIdx})">編輯</button>
+                    <button class="text-action del" onclick="deleteWord(${w.originalIdx})">刪除</button>
+                </div>
+            </div>`).join('');
+
+        const filterBar = document.getElementById('list-book-filter');
+        filterBar.innerHTML = ['全部', ...db.books].map(b => `<button class="sq-btn ${currentFilter===b?'active':''}" onclick="currentFilter='${b}'; renderList();">${b}</button>`).join('');
+    }
+
+    function toggleListStar(idx) { db.words[idx].starred = !db.words[idx].starred; save(); renderList(); }
+    function speakCurrent() { if(quizSet[qIdx]) speak(quizSet[qIdx].kana); }
+    function useHint() { if(quizSet[qIdx]) { qInput = quizSet[qIdx].kana; document.getElementById('nativeInput').value = qInput; renderSlots(); } }
+    function updateSetting(key, val) { db.config[key] = val; save(); }
+
+    function showPage(pid) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-'+pid).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(it => {
+            const map = {'home':'首頁','quiz':'測驗','list':'清單','import':'匯入','settings':'設定'};
+            it.classList.toggle('active', it.innerText === map[pid]);
+        });
+        if(pid==='list') renderList();
+        if(pid==='home') renderHome();
+        if(pid==='settings') document.getElementById('set-vibrate').checked = db.config.vibrate;
+    }
+
+    function renderHome() {
+        document.getElementById('home-book-list').innerHTML = db.books.map(b => `
+            <div class="card" style="margin:10px 15px; display:flex; align-items:center;">
+                <input type="checkbox" class="book-chk" value="${b}" checked style="width:22px; height:22px; margin-right:15px"> 
+                <span style="font-weight:600; font-size:16px;">${b}</span>
+            </div>`).join('');
+        document.getElementById('import-book-select').innerHTML = db.books.map(b => `<option value="${b}">${b}</option>`) + `<option value="NEW">+ 新增單字本</option>`;
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('mode-spell').classList.toggle('active', db.config.quizMode === 'spell');
+        document.getElementById('mode-recognize').classList.toggle('active', db.config.quizMode === 'recognize');
+        document.getElementById('order-default').classList.toggle('active', db.config.quizOrder === 'default');
+        document.getElementById('order-random').classList.toggle('active', db.config.quizOrder === 'random');
+    }
+
+    function setMode(m) { db.config.quizMode = m; updateUI(); save(); }
+    function setOrder(o) { db.config.quizOrder = o; updateUI(); save(); }
+    function toggleQuizConfig(key) { db.config[key] = !db.config[key]; updateUI(); loadQ(); save(); }
+    function toggleEditMode() { isEditMode = !isEditMode; document.getElementById('batch-bar').style.display = isEditMode?'flex':'none'; renderList(); }
+    function toggleCurrentStar() { let w = quizSet[qIdx]; w.starred = !w.starred; loadQ(); save(); }
+    
+    function doImport() {
+        const text = document.getElementById('import-area').value;
+        let b = document.getElementById('import-book-select').value;
+        if(b === 'NEW') { b = prompt("單字本名稱？"); if(b) db.books.push(b); else return; }
+        text.split('\n').forEach(l => {
+            const [d, k, m] = l.split('/');
+            if(d && k && m) db.words.push({ display:d.trim(), kana:k.trim(), meaning:m.trim(), book:b, starred:false });
+        });
+        save(); alert("匯入完成"); showPage('home');
+    }
+
+    function editWord(idx) {
+        const w = db.words[idx];
+        const d = prompt("單字(含漢字)", w.display);
+        const k = prompt("純假名", w.kana);
+        const m = prompt("中文意思", w.meaning);
+        if(d && k && m) { db.words[idx] = {...w, display:d, kana:k, meaning:m}; save(); renderList(); }
+    }
+    function deleteWord(idx) { if(confirm("確定刪除此單字？")) { db.words.splice(idx, 1); save(); renderList(); } }
+    function confirmClearData() { if(confirm("這將刪除所有單字本與單字，確定嗎？")) { localStorage.clear(); location.reload(); } }
+
+    renderHome();
+</script>
+</body>
+</html>
