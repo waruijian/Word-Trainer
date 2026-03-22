@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Word Trainer - 日文學習</title>
+    <title>日文學習 APP - V2.0.1 Modern</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3b82f6">
@@ -32,13 +32,10 @@
             padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.05); 
             position: fixed; bottom: 0; width: 100%; z-index: 100; backdrop-filter: blur(15px);
         }
-        .nav-item { color: var(--sub-text); font-size: 12px; border: none; background: none; transition: 0.2s; outline: none; }
+        .nav-item { color: var(--sub-text); font-size: 11px; border: none; background: none; transition: 0.2s; outline: none; padding: 5px; }
         .nav-item.active { color: var(--primary); font-weight: 700; transform: scale(1.1); }
 
-        .card {
-            background: var(--card-bg); margin: 10px 15px; padding: 18px; 
-            border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
-        }
+        .card { background: var(--card-bg); margin: 10px 15px; padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
 
         /* 測驗 UI */
         .quiz-header { padding: 15px; display: flex; flex-direction: column; align-items: center; }
@@ -49,45 +46,31 @@
         #q-chinese { font-size: 2.2em; font-weight: 700; margin: 10px 0; text-align: center; }
         
         .slots { display: flex; gap: 8px; margin: 20px 0; flex-wrap: wrap; justify-content: center; }
-        .slot { 
-            width: 38px; height: 50px; background: #1e293b; border-radius: 12px; 
-            font-size: 1.5em; display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .native-input { 
-            background: #1e293b; border: 2px solid transparent; color: #fff; 
-            padding: 15px; width: 80%; border-radius: 16px; font-size: 20px; 
-            text-align: center; transition: 0.3s; display: block; margin: 0 auto;
-        }
+        .slot { width: 38px; height: 50px; background: #1e293b; border-radius: 12px; font-size: 1.5em; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+        .native-input { background: #1e293b; border: 2px solid transparent; color: #fff; padding: 15px; width: 80%; border-radius: 16px; font-size: 20px; text-align: center; transition: 0.3s; display: block; margin: 0 auto; box-sizing: border-box; }
         .native-input:focus { border-color: var(--primary); outline: none; background: #0f172a; }
 
-        .btn-main { 
-            background: var(--primary); color: white; border: none; padding: 16px 32px; 
-            border-radius: 16px; font-weight: 700; font-size: 16px; transition: 0.2s;
-            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
-        }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 16px 32px; border-radius: 16px; font-weight: 700; font-size: 16px; transition: 0.2s; box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4); cursor: pointer; }
         .btn-main:active { transform: scale(0.96); }
         
-        .sq-btn { 
-            background: #1e293b; color: var(--sub-text); border: none; 
-            padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600;
-        }
+        .sq-btn { background: #1e293b; color: var(--sub-text); border: none; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
         .sq-btn.active { background: var(--primary); color: #fff; }
 
         /* 清單列表 */
-        .word-card { 
-            padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); 
-            display: flex; align-items: center; gap: 12px;
-        }
+        .word-card { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px; }
         .word-info b { font-size: 1.1em; color: var(--primary); }
-        .text-action { font-size: 12px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border: none; padding: 8px 14px; border-radius: 10px; margin-left: 4px; font-weight: 600; }
+        .text-action { font-size: 12px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border: none; padding: 8px 14px; border-radius: 10px; margin-left: 4px; font-weight: 600; cursor: pointer; }
         .text-action.del { color: var(--error); background: rgba(239, 68, 68, 0.1); }
-
         .star-btn { font-size: 28px; background: none; border: none; color: #334155; cursor: pointer; }
         .star-btn.active { color: var(--hint); transform: scale(1.1); }
 
-        /* 設定頁開關 */
+        /* 設定與進度 */
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .circular-chart { display: block; margin: 0 auto; max-width: 80%; max-height: 280px; }
+        .circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 6; }
+        .circle { fill: none; stroke-width: 6; stroke-linecap: round; }
+        .percentage { fill: var(--text); font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 800; text-anchor: middle; dominant-baseline: middle; }
     </style>
 </head>
 <body>
@@ -97,10 +80,10 @@
         <h2 style="padding: 30px 20px 10px 20px; font-size: 24px;">學習中心</h2>
         <div id="home-book-list" style="flex:1; overflow-y:auto;"></div>
         
-        <div class="card" style="margin-bottom: 100px;">
+        <div class="card" style="margin-bottom: 80px;">
             <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                <button id="mode-spell" class="sq-btn active" style="flex:1" onclick="setMode('spell')">拼字練習</button>
-                <button id="mode-recognize" class="sq-btn" style="flex:1" onclick="setMode('recognize')">認字練習</button>
+                <button id="mode-spell" class="sq-btn active" style="flex:1" onclick="setMode('spell')">拼字</button>
+                <button id="mode-recognize" class="sq-btn" style="flex:1" onclick="setMode('recognize')">認字</button>
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button id="order-default" class="sq-btn active" style="flex:1" onclick="setOrder('default')">預設順序</button>
@@ -114,7 +97,7 @@
         <div class="quiz-header">
             <div class="progress-container"><div id="p-bar" class="progress-bar"></div></div>
             <div style="display: flex; gap: 8px;">
-                <button id="btn-auto-speak" class="sq-btn" onclick="toggleQuizConfig('autoSpeak')">🔊 自動朗讀</button>
+                <button id="btn-auto-speak" class="sq-btn" onclick="toggleQuizConfig('autoSpeak')">🔊 朗讀</button>
                 <button id="btn-show-cn" class="sq-btn active" onclick="toggleQuizConfig('showChinese')">中文</button>
                 <button id="btn-show-kj" class="sq-btn active" onclick="toggleQuizConfig('showKanji')">漢字</button>
             </div>
@@ -138,7 +121,7 @@
 
             <div style="display:flex; gap:15px; margin-top:35px;">
                 <button onclick="useHint()" class="sq-btn" style="padding:12px 24px;">💡 提示</button>
-                <button onclick="speakCurrent()" class="sq-btn" style="padding:12px 24px;">🔊 朗讀</button>
+                <button onclick="speakCurrent()" class="sq-btn" style="padding:12px 24px;">🔊 發音</button>
             </div>
         </div>
     </div>
@@ -147,7 +130,7 @@
         <div style="padding: 20px; background: var(--bg); position: sticky; top:0; z-index:10;">
             <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="margin:0">所有單字</h3>
-                <button class="sq-btn" id="edit-mode-btn" onclick="toggleEditMode()">選取模式</button>
+                <button class="sq-btn" id="edit-mode-btn" onclick="toggleEditMode()">選取</button>
             </div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px;">
                 <button id="filter-star" class="sq-btn" onclick="toggleStarredFilter()">★ 收藏</button>
@@ -162,14 +145,42 @@
         </div>
     </div>
 
+    <div id="page-progress" class="page">
+        <h3 style="padding: 20px 20px 0 20px; text-align:center;">學習進度</h3>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding-bottom: 80px;">
+            
+            <div id="anim-container" style="transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); width: 100%;">
+                <svg viewBox="0 0 100 100" class="circular-chart">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#3b82f6" />
+                            <stop offset="100%" stop-color="#8b5cf6" />
+                        </linearGradient>
+                    </defs>
+                    <path class="circle-bg" d="M50 10 a 40 40 0 0 1 0 80 a 40 40 0 0 1 0 -80" />
+                    <path class="circle" id="circle-path" stroke-dasharray="251.2, 251.2" stroke="url(#gradient)" d="M50 10 a 40 40 0 0 1 0 80 a 40 40 0 0 1 0 -80" />
+                    <text x="50" y="50" class="percentage" id="progress-text">0%</text>
+                </svg>
+            </div>
+
+            <div class="card" style="width: 80%; max-width: 300px; text-align: center; margin-top: 30px;">
+                <p style="color:var(--sub-text); margin-top:0;">今日增加單字數量</p>
+                <div style="display:flex; justify-content:center; gap:10px;">
+                    <input type="number" id="daily-add-input" class="native-input" style="width:120px; padding:10px; font-size:18px;" min="1" placeholder="輸入數量">
+                    <button class="btn-main" onclick="triggerProgressAnimation()" style="padding:10px 24px; font-size: 20px;">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="page-import" class="page">
         <h3 style="padding: 20px;">資料管理</h3>
         <div class="card">
             <select id="import-book-select" style="width:100%; padding:14px; background:#1e293b; color:#fff; border-radius:14px; border:none; margin-bottom:15px;"></select>
             <textarea id="import-area" placeholder="格式：單字/假名/中文" style="width:100%; height:180px; background:#0f172a; border-radius:14px; border:1px solid #334155; color:#fff; padding:12px; box-sizing:border-box; font-size:14px;"></textarea>
             <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn-main" style="flex:1; padding:12px;" onclick="doImport()">匯入資料</button>
-                <button class="sq-btn" onclick="doExport()">匯出此本</button>
+                <button class="btn-main" style="flex:1; padding:12px;" onclick="doImport()">匯入</button>
+                <button class="sq-btn" onclick="doExport()">匯出</button>
             </div>
         </div>
     </div>
@@ -177,6 +188,10 @@
     <div id="page-settings" class="page">
         <h3 style="padding: 20px;">系統設定</h3>
         <div class="card">
+            <div class="setting-item">
+                <span>目標總單字量</span>
+                <input type="number" id="set-target-words" onchange="updateSetting('targetWords', parseInt(this.value)||1000)" class="native-input" style="width:100px; padding:10px; font-size:16px;">
+            </div>
             <div class="setting-item">
                 <span>答對時震動</span>
                 <input type="checkbox" id="set-vibrate" onchange="updateSetting('vibrate', this.checked)" style="width:20px; height:20px;">
@@ -186,54 +201,38 @@
                 <button class="sq-btn" style="color:var(--error); border:1px solid var(--error);" onclick="confirmClearData()">清空所有資料庫</button>
             </div>
         </div>
-        <p style="text-align:center; color:var(--sub-text); font-size:12px; margin-top:auto; padding-bottom:100px;">Version 18.1 Modern | Haptic Support</p>
+        <p style="text-align:center; color:var(--sub-text); font-size:12px; margin-top:auto; padding-bottom:100px;">Version 2.0.1 Modern</p>
     </div>
 
     <div class="nav-bar">
         <button class="nav-item active" onclick="showPage('home')">首頁</button>
         <button class="nav-item" onclick="showPage('quiz')">測驗</button>
         <button class="nav-item" onclick="showPage('list')">清單</button>
+        <button class="nav-item" onclick="showPage('progress')">進度</button>
         <button class="nav-item" onclick="showPage('import')">匯入</button>
         <button class="nav-item" onclick="showPage('settings')">設定</button>
     </div>
 </div>
 
 <script>
-    // 註冊 Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
-        });
-    }
-
     let db = JSON.parse(localStorage.getItem('jp_v18_db')) || { 
         books: ["預設單字本"], words: [],
-        config: { quizOrder: 'default', quizMode: 'spell', autoSpeak: false, showChinese: true, showKanji: true, vibrate: true } 
+        config: { quizOrder: 'default', quizMode: 'spell', autoSpeak: false, showChinese: true, showKanji: true, vibrate: true, targetWords: 1000, learnedWords: 0 } 
     };
     function save() { localStorage.setItem('jp_v18_db', JSON.stringify(db)); }
 
-    let currentFilter = '全部';
-    let isEditMode = false;
-    let starredOnly = false;
+    let currentFilter = '全部'; let isEditMode = false; let starredOnly = false;
 
-    // --- 震動與語音系統 ---
-    function triggerVibrate() {
-        if (db.config.vibrate && navigator.vibrate) {
-            navigator.vibrate(50);
-        }
-    }
-
+    function triggerVibrate() { if (db.config.vibrate && navigator.vibrate) navigator.vibrate(50); }
     function speak(text) {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'ja-JP'; msg.rate = 0.95;
+        const msg = new SpeechSynthesisUtterance(text); msg.lang = 'ja-JP'; msg.rate = 0.95;
         window.speechSynthesis.speak(msg);
     }
 
     // --- 測驗引擎 ---
     let quizSet = [], qIdx = 0, qInput = "", currentPool = [], currentOptions = [];
-
     function startQuiz() {
         const checked = Array.from(document.querySelectorAll('.book-chk:checked')).map(i => i.value);
         if(!checked.length) return alert("請勾選單字本");
@@ -242,9 +241,8 @@
         if(db.config.quizOrder === 'random') quizSet.sort(() => Math.random() - 0.5);
         qIdx = 0; showPage('quiz'); loadQ();
     }
-
     function loadQ() {
-        if(qIdx >= quizSet.length) { alert("測驗結束！做得好！"); showPage('home'); return; }
+        if(qIdx >= quizSet.length) { alert("測驗結束！"); showPage('home'); return; }
         const w = quizSet[qIdx];
         document.getElementById('q-kanji').innerText = db.config.showKanji ? w.display : "";
         document.getElementById('q-chinese').innerText = db.config.showChinese ? w.meaning : "";
@@ -267,48 +265,111 @@
             renderOptions();
         }
     }
-
     function onNativeInput(el) { qInput = el.value; renderSlots(); }
     function renderSlots() {
         const w = quizSet[qIdx];
         document.getElementById('slotContainer').innerHTML = new Array(w.kana.length).fill(0).map((_,i) => `<div class="slot">${qInput[i] || ""}</div>`).join('');
     }
-
     function handleManualCheck() {
-        const w = quizSet[qIdx];
-        if (qInput === w.kana) {
-            triggerVibrate();
-            document.getElementById('q-result').innerText = "正解！✨";
-            document.getElementById('q-result').style.color = "var(--success)";
+        if (qInput === quizSet[qIdx].kana) {
+            triggerVibrate(); document.getElementById('q-result').innerText = "正解！✨"; document.getElementById('q-result').style.color = "var(--success)";
             setTimeout(() => { qIdx++; loadQ(); }, 600);
         } else {
-            document.getElementById('q-result').innerText = "錯誤";
-            document.getElementById('q-result').style.color = "var(--error)";
+            document.getElementById('q-result').innerText = "錯誤"; document.getElementById('q-result').style.color = "var(--error)";
             setTimeout(() => { document.getElementById('q-result').innerText = ""; }, 800);
         }
     }
-
     function renderOptions() {
         const w = quizSet[qIdx];
-        const grid = document.getElementById('optionsGrid');
         let distractors = currentPool.filter(item => item.kana !== w.kana).sort(() => Math.random() - 0.5);
         currentOptions = [w, ...distractors.slice(0, 3)].sort(() => Math.random() - 0.5);
-        grid.innerHTML = currentOptions.map((opt, i) => `<button class="option-btn" style="background:#1e293b; border:1px solid #334155; color:white; padding:18px; border-radius:14px; font-weight:600;" onclick="checkOption(${i}, this)">${opt.kana}</button>`).join('');
+        document.getElementById('optionsGrid').innerHTML = currentOptions.map((opt, i) => `<button class="option-btn" style="background:#1e293b; border:1px solid #334155; color:white; padding:18px; border-radius:14px; font-weight:600;" onclick="checkOption(${i}, this)">${opt.kana}</button>`).join('');
     }
-
     function checkOption(idx, btn) {
         if (currentOptions[idx].kana === quizSet[qIdx].kana) {
-            triggerVibrate();
-            btn.style.background = "var(--success)";
-            setTimeout(() => { qIdx++; loadQ(); }, 500);
+            triggerVibrate(); btn.style.background = "var(--success)"; setTimeout(() => { qIdx++; loadQ(); }, 500);
         } else {
-            btn.style.background = "var(--error)";
-            setTimeout(() => { btn.style.background = "#1e293b"; }, 500);
+            btn.style.background = "var(--error)"; setTimeout(() => { btn.style.background = "#1e293b"; }, 500);
         }
     }
 
-    function toggleStarredFilter() { starredOnly = !starredOnly; document.getElementById('filter-star').classList.toggle('active', starredOnly); renderList(); }
+    // --- 動畫與進度系統 ---
+    function renderProgressStatic() {
+        const target = parseInt(db.config.targetWords) || 1000;
+        const learned = parseInt(db.config.learnedWords) || 0;
+        const pct = Math.min((learned / target) * 100, 100);
+        
+        const path = document.getElementById('circle-path');
+        const text = document.getElementById('progress-text');
+        
+        path.style.transition = 'none';
+        path.style.strokeDashoffset = 251.2 - (251.2 * pct / 100);
+        text.innerHTML = `${Math.round(pct)}%`;
+    }
 
+    function animateValue(obj, start, end, duration, decimals) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const current = progress * (end - start) + start;
+            obj.innerHTML = current.toFixed(decimals) + '%';
+            if (progress < 1) window.requestAnimationFrame(step);
+            else obj.innerHTML = end.toFixed(decimals) + '%';
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    async function triggerProgressAnimation() {
+        const addVal = parseInt(document.getElementById('daily-add-input').value);
+        if (isNaN(addVal) || addVal <= 0) return alert('請輸入有效數量');
+
+        const total = parseInt(db.config.targetWords) || 1000;
+        const oldLearned = parseInt(db.config.learnedWords) || 0;
+        const newLearned = oldLearned + addVal;
+
+        const oldPct = Math.min((oldLearned / total) * 100, 100);
+        const newPct = Math.min((newLearned / total) * 100, 100);
+
+        const path = document.getElementById('circle-path');
+        const text = document.getElementById('progress-text');
+        const container = document.getElementById('anim-container');
+
+        // 初始化
+        path.style.transition = 'none';
+        path.style.strokeDashoffset = 251.2;
+        text.innerHTML = '0%';
+        
+        await new Promise(r => setTimeout(r, 50));
+
+        // (1) 從0%跑動到目前數值 (整數)
+        path.style.transition = 'stroke-dashoffset 1s ease-out';
+        path.style.strokeDashoffset = 251.2 - (251.2 * oldPct / 100);
+        animateValue(text, 0, oldPct, 1000, 0);
+        
+        await new Promise(r => setTimeout(r, 1200));
+
+        // (2) 放大，移動至新數值 (小數點第二位)
+        container.style.transform = 'scale(1.25)';
+        await new Promise(r => setTimeout(r, 400));
+        
+        path.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.25, 1, 0.5, 1)';
+        path.style.strokeDashoffset = 251.2 - (251.2 * newPct / 100);
+        animateValue(text, oldPct, newPct, 1500, 2);
+
+        await new Promise(r => setTimeout(r, 2000));
+
+        // (3) 縮小，儲存並停留在進度頁面
+        container.style.transform = 'scale(1)';
+        await new Promise(r => setTimeout(r, 600));
+
+        db.config.learnedWords = newLearned;
+        save();
+        document.getElementById('daily-add-input').value = '';
+    }
+
+    // --- 清單管理 ---
+    function toggleStarredFilter() { starredOnly = !starredOnly; document.getElementById('filter-star').classList.toggle('active', starredOnly); renderList(); }
     function renderList() {
         const container = document.getElementById('list-container');
         let words = db.words.map((w, i) => ({...w, originalIdx: i}));
@@ -329,28 +390,29 @@
                     <button class="text-action del" onclick="deleteWord(${w.originalIdx})">刪除</button>
                 </div>
             </div>`).join('');
-
-        const filterBar = document.getElementById('list-book-filter');
-        filterBar.innerHTML = ['全部', ...db.books].map(b => `<button class="sq-btn ${currentFilter===b?'active':''}" onclick="currentFilter='${b}'; renderList();">${b}</button>`).join('');
+        document.getElementById('list-book-filter').innerHTML = ['全部', ...db.books].map(b => `<button class="sq-btn ${currentFilter===b?'active':''}" onclick="currentFilter='${b}'; renderList();">${b}</button>`).join('');
     }
-
     function toggleListStar(idx) { db.words[idx].starred = !db.words[idx].starred; save(); renderList(); }
     function speakCurrent() { if(quizSet[qIdx]) speak(quizSet[qIdx].kana); }
     function useHint() { if(quizSet[qIdx]) { qInput = quizSet[qIdx].kana; document.getElementById('nativeInput').value = qInput; renderSlots(); } }
-    function updateSetting(key, val) { db.config[key] = val; save(); }
 
+    // --- 系統基礎 ---
+    function updateSetting(key, val) { db.config[key] = val; save(); }
     function showPage(pid) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('page-'+pid).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(it => {
-            const map = {'home':'首頁','quiz':'測驗','list':'清單','import':'匯入','settings':'設定'};
+            const map = {'home':'首頁','quiz':'測驗','list':'清單','progress':'進度','import':'匯入','settings':'設定'};
             it.classList.toggle('active', it.innerText === map[pid]);
         });
         if(pid==='list') renderList();
         if(pid==='home') renderHome();
-        if(pid==='settings') document.getElementById('set-vibrate').checked = db.config.vibrate;
+        if(pid==='settings') {
+            document.getElementById('set-vibrate').checked = db.config.vibrate;
+            document.getElementById('set-target-words').value = db.config.targetWords || 1000;
+        }
+        if(pid==='progress') renderProgressStatic();
     }
-
     function renderHome() {
         document.getElementById('home-book-list').innerHTML = db.books.map(b => `
             <div class="card" style="margin:10px 15px; display:flex; align-items:center;">
@@ -360,42 +422,29 @@
         document.getElementById('import-book-select').innerHTML = db.books.map(b => `<option value="${b}">${b}</option>`) + `<option value="NEW">+ 新增單字本</option>`;
         updateUI();
     }
-
     function updateUI() {
         document.getElementById('mode-spell').classList.toggle('active', db.config.quizMode === 'spell');
         document.getElementById('mode-recognize').classList.toggle('active', db.config.quizMode === 'recognize');
         document.getElementById('order-default').classList.toggle('active', db.config.quizOrder === 'default');
         document.getElementById('order-random').classList.toggle('active', db.config.quizOrder === 'random');
     }
-
     function setMode(m) { db.config.quizMode = m; updateUI(); save(); }
     function setOrder(o) { db.config.quizOrder = o; updateUI(); save(); }
     function toggleQuizConfig(key) { db.config[key] = !db.config[key]; updateUI(); loadQ(); save(); }
     function toggleEditMode() { isEditMode = !isEditMode; document.getElementById('batch-bar').style.display = isEditMode?'flex':'none'; renderList(); }
     function toggleCurrentStar() { let w = quizSet[qIdx]; w.starred = !w.starred; loadQ(); save(); }
-    
     function doImport() {
-        const text = document.getElementById('import-area').value;
-        let b = document.getElementById('import-book-select').value;
+        const text = document.getElementById('import-area').value; let b = document.getElementById('import-book-select').value;
         if(b === 'NEW') { b = prompt("單字本名稱？"); if(b) db.books.push(b); else return; }
-        text.split('\n').forEach(l => {
-            const [d, k, m] = l.split('/');
-            if(d && k && m) db.words.push({ display:d.trim(), kana:k.trim(), meaning:m.trim(), book:b, starred:false });
-        });
+        text.split('\n').forEach(l => { const [d, k, m] = l.split('/'); if(d && k && m) db.words.push({ display:d.trim(), kana:k.trim(), meaning:m.trim(), book:b, starred:false }); });
         save(); alert("匯入完成"); showPage('home');
     }
-
-    function editWord(idx) {
-        const w = db.words[idx];
-        const d = prompt("單字(含漢字)", w.display);
-        const k = prompt("純假名", w.kana);
-        const m = prompt("中文意思", w.meaning);
-        if(d && k && m) { db.words[idx] = {...w, display:d, kana:k, meaning:m}; save(); renderList(); }
-    }
+    function editWord(idx) { const w = db.words[idx]; const d = prompt("單字(含漢字)", w.display); const k = prompt("純假名", w.kana); const m = prompt("中文意思", w.meaning); if(d && k && m) { db.words[idx] = {...w, display:d, kana:k, meaning:m}; save(); renderList(); } }
     function deleteWord(idx) { if(confirm("確定刪除此單字？")) { db.words.splice(idx, 1); save(); renderList(); } }
-    function confirmClearData() { if(confirm("這將刪除所有單字本與單字，確定嗎？")) { localStorage.clear(); location.reload(); } }
+    function confirmClearData() { if(confirm("確定清空？")) { localStorage.clear(); location.reload(); } }
 
     renderHome();
+    if(db.config.targetWords === undefined) { db.config.targetWords = 1000; db.config.learnedWords = 0; save(); }
 </script>
 </body>
 </html>
