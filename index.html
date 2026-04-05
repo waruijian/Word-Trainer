@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>日文學習 APP - V2.0.1 Modern</title>
-    
+    <title>日文學習 APP - V2.2.0 Modern</title>
+
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3b82f6">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -53,16 +53,20 @@
         .btn-main { background: var(--primary); color: white; border: none; padding: 16px 32px; border-radius: 16px; font-weight: 700; font-size: 16px; transition: 0.2s; box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4); cursor: pointer; }
         .btn-main:active { transform: scale(0.96); }
         
-        .sq-btn { background: #1e293b; color: var(--sub-text); border: none; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .sq-btn { background: #1e293b; color: var(--sub-text); border: none; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .sq-btn.active { background: var(--primary); color: #fff; }
 
         /* 清單列表 */
-        .word-card { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px; }
+        .word-card { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: flex-start; gap: 12px; }
         .word-info b { font-size: 1.1em; color: var(--primary); }
-        .text-action { font-size: 12px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border: none; padding: 8px 14px; border-radius: 10px; margin-left: 4px; font-weight: 600; cursor: pointer; }
+        .text-action { font-size: 12px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border: none; padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .text-action.del { color: var(--error); background: rgba(239, 68, 68, 0.1); }
-        .star-btn { font-size: 28px; background: none; border: none; color: #334155; cursor: pointer; }
+        .star-btn { font-size: 28px; background: none; border: none; color: #334155; cursor: pointer; margin-top: -5px; }
         .star-btn.active { color: var(--hint); transform: scale(1.1); }
+        .prof-badge { font-size: 11px; padding: 4px 8px; border-radius: 8px; font-weight: 700; white-space: nowrap; }
+
+        .blur-text { filter: blur(4px); opacity: 0.3; cursor: pointer; }
+        .blur-text.revealed { filter: none !important; opacity: 1 !important; }
 
         /* 設定與進度 */
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -128,9 +132,13 @@
 
     <div id="page-list" class="page">
         <div style="padding: 20px; background: var(--bg); position: sticky; top:0; z-index:10;">
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <h3 style="margin:0">所有單字</h3>
                 <button class="sq-btn" id="edit-mode-btn" onclick="toggleEditMode()">選取</button>
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom: 12px;">
+                <button id="btn-hide-jp" class="sq-btn" onclick="toggleHideJp()">隱藏日文</button>
+                <button id="btn-hide-cn" class="sq-btn" onclick="toggleHideCn()">隱藏中文</button>
             </div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px;">
                 <button id="filter-star" class="sq-btn" onclick="toggleStarredFilter()">★ 收藏</button>
@@ -164,10 +172,9 @@
             </div>
 
             <div class="card" style="width: 80%; max-width: 300px; text-align: center; margin-top: 30px;">
-                <p style="color:var(--sub-text); margin-top:0;">今日增加單字數量</p>
+                <p style="color:var(--sub-text); margin-top:0;">同步最新學習數據</p>
                 <div style="display:flex; justify-content:center; gap:10px;">
-                    <input type="number" id="daily-add-input" class="native-input" style="width:120px; padding:10px; font-size:18px;" min="1" placeholder="輸入數量">
-                    <button class="btn-main" onclick="triggerProgressAnimation()" style="padding:10px 24px; font-size: 20px;">+</button>
+                    <button class="btn-main" onclick="triggerProgressAnimation()" style="padding:14px 32px; font-size: 18px; width: 100%;">更新進度</button>
                 </div>
             </div>
         </div>
@@ -189,8 +196,8 @@
         <h3 style="padding: 20px;">系統設定</h3>
         <div class="card">
             <div class="setting-item">
-                <span>目標總單字量</span>
-                <input type="number" id="set-target-words" onchange="updateSetting('targetWords', parseInt(this.value)||1000)" class="native-input" style="width:100px; padding:10px; font-size:16px;">
+                <span>目標總單字量 (自動鎖定)</span>
+                <input type="number" id="set-target-words" class="native-input" style="width:100px; padding:10px; font-size:16px; background:#0f172a; border-color:transparent;" readonly>
             </div>
             <div class="setting-item">
                 <span>答對時震動</span>
@@ -201,7 +208,7 @@
                 <button class="sq-btn" style="color:var(--error); border:1px solid var(--error);" onclick="confirmClearData()">清空所有資料庫</button>
             </div>
         </div>
-        <p style="text-align:center; color:var(--sub-text); font-size:12px; margin-top:auto; padding-bottom:100px;">Version 2.0.1 Modern</p>
+        <p style="text-align:center; color:var(--sub-text); font-size:12px; margin-top:auto; padding-bottom:100px;">Version 2.2.0 Modern</p>
     </div>
 
     <div class="nav-bar">
@@ -217,11 +224,15 @@
 <script>
     let db = JSON.parse(localStorage.getItem('jp_v18_db')) || { 
         books: ["預設單字本"], words: [],
-        config: { quizOrder: 'default', quizMode: 'spell', autoSpeak: false, showChinese: true, showKanji: true, vibrate: true, targetWords: 1000, learnedWords: 0 } 
+        config: { quizOrder: 'default', quizMode: 'spell', autoSpeak: false, showChinese: true, showKanji: true, vibrate: true, learnedWords: 0 } 
     };
-    function save() { localStorage.setItem('jp_v18_db', JSON.stringify(db)); }
+    function save() { 
+        db.config.targetWords = db.words.length || 1; 
+        localStorage.setItem('jp_v18_db', JSON.stringify(db)); 
+    }
 
     let currentFilter = '全部'; let isEditMode = false; let starredOnly = false;
+    let hideJp = false; let hideCn = false;
 
     function triggerVibrate() { if (db.config.vibrate && navigator.vibrate) navigator.vibrate(50); }
     function speak(text) {
@@ -270,34 +281,51 @@
         const w = quizSet[qIdx];
         document.getElementById('slotContainer').innerHTML = new Array(w.kana.length).fill(0).map((_,i) => `<div class="slot">${qInput[i] || ""}</div>`).join('');
     }
+    
     function handleManualCheck() {
-        if (qInput === quizSet[qIdx].kana) {
+        let w = quizSet[qIdx];
+        w.totalCount = (w.totalCount || 0) + 1;
+
+        if (qInput === w.kana) {
             triggerVibrate(); document.getElementById('q-result').innerText = "正解！✨"; document.getElementById('q-result').style.color = "var(--success)";
+            save();
             setTimeout(() => { qIdx++; loadQ(); }, 600);
         } else {
+            w.wrongCount = (w.wrongCount || 0) + 1;
             document.getElementById('q-result').innerText = "錯誤"; document.getElementById('q-result').style.color = "var(--error)";
+            save();
             setTimeout(() => { document.getElementById('q-result').innerText = ""; }, 800);
         }
     }
+    
     function renderOptions() {
         const w = quizSet[qIdx];
         let distractors = currentPool.filter(item => item.kana !== w.kana).sort(() => Math.random() - 0.5);
         currentOptions = [w, ...distractors.slice(0, 3)].sort(() => Math.random() - 0.5);
         document.getElementById('optionsGrid').innerHTML = currentOptions.map((opt, i) => `<button class="option-btn" style="background:#1e293b; border:1px solid #334155; color:white; padding:18px; border-radius:14px; font-weight:600;" onclick="checkOption(${i}, this)">${opt.kana}</button>`).join('');
     }
+    
     function checkOption(idx, btn) {
-        if (currentOptions[idx].kana === quizSet[qIdx].kana) {
-            triggerVibrate(); btn.style.background = "var(--success)"; setTimeout(() => { qIdx++; loadQ(); }, 500);
+        let w = quizSet[qIdx];
+        w.totalCount = (w.totalCount || 0) + 1;
+
+        if (currentOptions[idx].kana === w.kana) {
+            triggerVibrate(); btn.style.background = "var(--success)"; 
+            save();
+            setTimeout(() => { qIdx++; loadQ(); }, 500);
         } else {
-            btn.style.background = "var(--error)"; setTimeout(() => { btn.style.background = "#1e293b"; }, 500);
+            w.wrongCount = (w.wrongCount || 0) + 1;
+            btn.style.background = "var(--error)"; 
+            save();
+            setTimeout(() => { btn.style.background = "#1e293b"; }, 500);
         }
     }
 
     // --- 動畫與進度系統 ---
     function renderProgressStatic() {
-        const target = parseInt(db.config.targetWords) || 1000;
+        const total = db.words.length || 1;
         const learned = parseInt(db.config.learnedWords) || 0;
-        const pct = Math.min((learned / target) * 100, 100);
+        const pct = Math.min((learned / total) * 100, 100);
         
         const path = document.getElementById('circle-path');
         const text = document.getElementById('progress-text');
@@ -321,12 +349,15 @@
     }
 
     async function triggerProgressAnimation() {
-        const addVal = parseInt(document.getElementById('daily-add-input').value);
-        if (isNaN(addVal) || addVal <= 0) return alert('請輸入有效數量');
-
-        const total = parseInt(db.config.targetWords) || 1000;
+        const total = db.words.length || 1;
         const oldLearned = parseInt(db.config.learnedWords) || 0;
-        const newLearned = oldLearned + addVal;
+        
+        // 練度 >= 80% 的單字數量
+        const newLearned = db.words.filter(w => {
+            let tc = w.totalCount || 0;
+            let wc = w.wrongCount || 0;
+            return tc >= 3 && ((tc - wc) / tc) >= 0.8;
+        }).length;
 
         const oldPct = Math.min((oldLearned / total) * 100, 100);
         const newPct = Math.min((newLearned / total) * 100, 100);
@@ -342,56 +373,78 @@
         
         await new Promise(r => setTimeout(r, 50));
 
-        // (1) 從0%跑動到目前數值 (整數)
+        // (1) 從0%跑動到舊進度數值
         path.style.transition = 'stroke-dashoffset 1s ease-out';
         path.style.strokeDashoffset = 251.2 - (251.2 * oldPct / 100);
         animateValue(text, 0, oldPct, 1000, 0);
         
         await new Promise(r => setTimeout(r, 1200));
 
-        // (2) 放大，移動至新數值 (小數點第二位)
+        // (2) 放大，移動至新進度數值
         container.style.transform = 'scale(1.25)';
         await new Promise(r => setTimeout(r, 400));
         
         path.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.25, 1, 0.5, 1)';
         path.style.strokeDashoffset = 251.2 - (251.2 * newPct / 100);
-        animateValue(text, oldPct, newPct, 1500, 2);
+        animateValue(text, oldPct, newPct, 1500, 0);
 
         await new Promise(r => setTimeout(r, 2000));
 
-        // (3) 縮小，儲存並停留在進度頁面
+        // (3) 縮小並儲存新狀態
         container.style.transform = 'scale(1)';
         await new Promise(r => setTimeout(r, 600));
 
         db.config.learnedWords = newLearned;
         save();
-        document.getElementById('daily-add-input').value = '';
     }
 
     // --- 清單管理 ---
     function toggleStarredFilter() { starredOnly = !starredOnly; document.getElementById('filter-star').classList.toggle('active', starredOnly); renderList(); }
+    function toggleHideJp() { hideJp = !hideJp; document.getElementById('btn-hide-jp').classList.toggle('active', hideJp); renderList(); }
+    function toggleHideCn() { hideCn = !hideCn; document.getElementById('btn-hide-cn').classList.toggle('active', hideCn); renderList(); }
+    
     function renderList() {
         const container = document.getElementById('list-container');
         let words = db.words.map((w, i) => ({...w, originalIdx: i}));
         if (currentFilter !== '全部') words = words.filter(w => w.book === currentFilter);
         if (starredOnly) words = words.filter(w => w.starred);
         
-        container.innerHTML = words.map(w => `
+        container.innerHTML = words.map((w, index) => {
+            let tc = w.totalCount || 0;
+            let wc = w.wrongCount || 0;
+            let cc = tc - wc;
+            let isProficient = tc >= 3 && (cc / tc) >= 0.8;
+            let profText = tc >= 3 ? Math.round((cc / tc) * 100) + '%' : '新單字';
+            let profBg = tc >= 3 ? (isProficient ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)') : 'rgba(255,255,255,0.05)';
+            let profColor = tc >= 3 ? (isProficient ? 'var(--success)' : 'var(--hint)') : 'var(--sub-text)';
+
+            return `
             <div class="word-card">
                 <input type="checkbox" class="batch-chk" value="${w.originalIdx}" style="display:${isEditMode?'block':'none'}; width:22px; height:22px;">
-                <span class="star-btn ${w.starred?'active':''}" style="font-size:24px" onclick="toggleListStar(${w.originalIdx})">${w.starred?'★':'☆'}</span>
-                <div class="word-info" style="flex:1">
-                    <b>${w.display}</b> <small style="color:var(--sub-text); margin-left:5px;">${w.kana}</small><br>
-                    <span style="font-size:13px; color:var(--sub-text); line-height:20px;">${w.meaning}</span>
+                <span class="star-btn ${w.starred?'active':''}" onclick="toggleListStar(${w.originalIdx})">${w.starred?'★':'☆'}</span>
+                
+                <div class="word-info" style="flex:1;">
+                    <span style="color:var(--sub-text); font-size:12px; margin-right:6px; font-weight:bold;">${index + 1}.</span>
+                    <span class="${hideJp ? 'blur-text' : ''}" style="transition: 0.2s;" onclick="this.classList.toggle('revealed')">
+                        <b>${w.display}</b> <small style="color:var(--sub-text); margin-left:5px;">${w.kana}</small>
+                    </span><br>
+                    <span class="${hideCn ? 'blur-text' : ''}" style="font-size:13px; color:var(--sub-text); line-height:20px; transition: 0.2s;" onclick="this.classList.toggle('revealed')">${w.meaning}</span>
                 </div>
-                <div class="word-ops" style="display:${isEditMode?'none':'flex'}">
-                    <button class="text-action" onclick="speak('${w.kana}')">發音</button>
-                    <button class="text-action" onclick="editWord(${w.originalIdx})">編輯</button>
-                    <button class="text-action del" onclick="deleteWord(${w.originalIdx})">刪除</button>
+
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                    <span class="prof-badge" style="background:${profBg}; color:${profColor};">${profText}</span>
+                    <div class="word-ops" style="display:${isEditMode?'none':'flex'}; gap: 4px;">
+                        <button class="text-action" onclick="speak('${w.kana}')">發音</button>
+                        <button class="text-action" onclick="editWord(${w.originalIdx})">編輯</button>
+                        <button class="text-action del" onclick="deleteWord(${w.originalIdx})">刪除</button>
+                    </div>
                 </div>
-            </div>`).join('');
+            </div>`
+        }).join('');
+        
         document.getElementById('list-book-filter').innerHTML = ['全部', ...db.books].map(b => `<button class="sq-btn ${currentFilter===b?'active':''}" onclick="currentFilter='${b}'; renderList();">${b}</button>`).join('');
     }
+    
     function toggleListStar(idx) { db.words[idx].starred = !db.words[idx].starred; save(); renderList(); }
     function speakCurrent() { if(quizSet[qIdx]) speak(quizSet[qIdx].kana); }
     function useHint() { if(quizSet[qIdx]) { qInput = quizSet[qIdx].kana; document.getElementById('nativeInput').value = qInput; renderSlots(); } }
@@ -409,7 +462,7 @@
         if(pid==='home') renderHome();
         if(pid==='settings') {
             document.getElementById('set-vibrate').checked = db.config.vibrate;
-            document.getElementById('set-target-words').value = db.config.targetWords || 1000;
+            document.getElementById('set-target-words').value = db.words.length || 0;
         }
         if(pid==='progress') renderProgressStatic();
     }
@@ -436,15 +489,17 @@
     function doImport() {
         const text = document.getElementById('import-area').value; let b = document.getElementById('import-book-select').value;
         if(b === 'NEW') { b = prompt("單字本名稱？"); if(b) db.books.push(b); else return; }
-        text.split('\n').forEach(l => { const [d, k, m] = l.split('/'); if(d && k && m) db.words.push({ display:d.trim(), kana:k.trim(), meaning:m.trim(), book:b, starred:false }); });
+        text.split('\n').forEach(l => { const [d, k, m] = l.split('/'); if(d && k && m) db.words.push({ display:d.trim(), kana:k.trim(), meaning:m.trim(), book:b, starred:false, totalCount:0, wrongCount:0 }); });
         save(); alert("匯入完成"); showPage('home');
     }
     function editWord(idx) { const w = db.words[idx]; const d = prompt("單字(含漢字)", w.display); const k = prompt("純假名", w.kana); const m = prompt("中文意思", w.meaning); if(d && k && m) { db.words[idx] = {...w, display:d, kana:k, meaning:m}; save(); renderList(); } }
     function deleteWord(idx) { if(confirm("確定刪除此單字？")) { db.words.splice(idx, 1); save(); renderList(); } }
     function confirmClearData() { if(confirm("確定清空？")) { localStorage.clear(); location.reload(); } }
 
+    // 初始化確保變數存在
+    if(db.config.learnedWords === undefined) { db.config.learnedWords = 0; }
+    save();
     renderHome();
-    if(db.config.targetWords === undefined) { db.config.targetWords = 1000; db.config.learnedWords = 0; save(); }
 </script>
 </body>
 </html>
