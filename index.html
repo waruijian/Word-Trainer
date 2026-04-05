@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>日文學習 APP - V2.2.0 Modern</title>
-
+    <title>日文學習 APP - V2.2.2 Modern</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3b82f6">
     <link rel="apple-touch-icon" href="icon-192.png">
+
 
     <style>
         :root {
@@ -56,13 +57,20 @@
         .sq-btn { background: #1e293b; color: var(--sub-text); border: none; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .sq-btn.active { background: var(--primary); color: #fff; }
 
-        /* 清單列表 */
-        .word-card { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: flex-start; gap: 12px; }
-        .word-info b { font-size: 1.1em; color: var(--primary); }
+        /* 清單列表重構 */
+        .word-card { border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; }
+        .word-row { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s; }
+        .word-row:active { background: rgba(255,255,255,0.02); }
+        
         .text-action { font-size: 12px; color: var(--primary); background: rgba(59, 130, 246, 0.1); border: none; padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .text-action.del { color: var(--error); background: rgba(239, 68, 68, 0.1); }
-        .star-btn { font-size: 28px; background: none; border: none; color: #334155; cursor: pointer; margin-top: -5px; }
-        .star-btn.active { color: var(--hint); transform: scale(1.1); }
+        
+        /* 星星樣式 (三段式) */
+        .star-btn { background: none; border: none; color: #334155; cursor: pointer; transition: transform 0.2s; }
+        .star-state-1 { color: var(--hint); }
+        .star-state-2 { color: var(--success); }
+        #quiz-star { font-size: 28px; margin-top: -5px; }
+        
         .prof-badge { font-size: 11px; padding: 4px 8px; border-radius: 8px; font-weight: 700; white-space: nowrap; }
 
         .blur-text { filter: blur(4px); opacity: 0.3; cursor: pointer; }
@@ -85,11 +93,12 @@
         <div id="home-book-list" style="flex:1; overflow-y:auto;"></div>
         
         <div class="card" style="margin-bottom: 80px;">
-            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                 <button id="mode-spell" class="sq-btn active" style="flex:1" onclick="setMode('spell')">拼字</button>
                 <button id="mode-recognize" class="sq-btn" style="flex:1" onclick="setMode('recognize')">認字</button>
+                <button id="mode-kanji" class="sq-btn" style="flex:1" onclick="setMode('kanji')">漢字</button>
             </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;">
                 <button id="order-default" class="sq-btn active" style="flex:1" onclick="setOrder('default')">預設順序</button>
                 <button id="order-random" class="sq-btn" style="flex:1" onclick="setOrder('random')">隨機順序</button>
             </div>
@@ -136,9 +145,10 @@
                 <h3 style="margin:0">所有單字</h3>
                 <button class="sq-btn" id="edit-mode-btn" onclick="toggleEditMode()">選取</button>
             </div>
-            <div style="display:flex; gap:8px; margin-bottom: 12px;">
-                <button id="btn-hide-jp" class="sq-btn" onclick="toggleHideJp()">隱藏日文</button>
-                <button id="btn-hide-cn" class="sq-btn" onclick="toggleHideCn()">隱藏中文</button>
+            <div style="display:flex; gap:8px; margin-bottom: 12px; overflow-x:auto;">
+                <button id="btn-hide-jp" class="sq-btn" style="white-space:nowrap;" onclick="toggleHideJp()">隱藏日文</button>
+                <button id="btn-hide-kana" class="sq-btn" style="white-space:nowrap;" onclick="toggleHideKana()">隱藏假名</button>
+                <button id="btn-hide-cn" class="sq-btn" style="white-space:nowrap;" onclick="toggleHideCn()">隱藏中文</button>
             </div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px;">
                 <button id="filter-star" class="sq-btn" onclick="toggleStarredFilter()">★ 收藏</button>
@@ -156,7 +166,6 @@
     <div id="page-progress" class="page">
         <h3 style="padding: 20px 20px 0 20px; text-align:center;">學習進度</h3>
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding-bottom: 80px;">
-            
             <div id="anim-container" style="transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); width: 100%;">
                 <svg viewBox="0 0 100 100" class="circular-chart">
                     <defs>
@@ -170,7 +179,6 @@
                     <text x="50" y="50" class="percentage" id="progress-text">0%</text>
                 </svg>
             </div>
-
             <div class="card" style="width: 80%; max-width: 300px; text-align: center; margin-top: 30px;">
                 <p style="color:var(--sub-text); margin-top:0;">同步最新學習數據</p>
                 <div style="display:flex; justify-content:center; gap:10px;">
@@ -208,7 +216,7 @@
                 <button class="sq-btn" style="color:var(--error); border:1px solid var(--error);" onclick="confirmClearData()">清空所有資料庫</button>
             </div>
         </div>
-        <p style="text-align:center; color:var(--sub-text); font-size:12px; margin-top:auto; padding-bottom:100px;">Version 2.2.0 Modern</p>
+        <p style="text-align:center; color:var(--sub-text); font-size:12px; margin-top:auto; padding-bottom:100px;">Version 2.2.2 Modern</p>
     </div>
 
     <div class="nav-bar">
@@ -232,7 +240,7 @@
     }
 
     let currentFilter = '全部'; let isEditMode = false; let starredOnly = false;
-    let hideJp = false; let hideCn = false;
+    let hideJp = false; let hideCn = false; let hideKana = false;
 
     function triggerVibrate() { if (db.config.vibrate && navigator.vibrate) navigator.vibrate(50); }
     function speak(text) {
@@ -240,6 +248,42 @@
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text); msg.lang = 'ja-JP'; msg.rate = 0.95;
         window.speechSynthesis.speak(msg);
+    }
+
+    // --- 發音相近選項生成器 ---
+    function generateSimilarKana(correctKana, count = 3) {
+        const kanaGroups = [
+            ['あ','い','う','え','お'], ['か','き','く','け','こ','が','ぎ','ぐ','げ','ご'],
+            ['さ','し','す','せ','そ','ざ','じ','ず','ぜ','ぞ'], ['た','ち','つ','て','と','だ','ぢ','づ','で','ど'],
+            ['な','に','ぬ','ね','の'], ['は','ひ','ふ','へ','ほ','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'],
+            ['ま','み','む','め','も'], ['や','ゆ','よ'], ['ら','り','る','れ','ろ'], ['わ','を','ん']
+        ];
+        let distractors = new Set();
+        let attempts = 0;
+        
+        while(distractors.size < count && attempts < 50) {
+            attempts++;
+            let chars = correctKana.split('');
+            if (chars.length === 0) break;
+            
+            let replaceIdx = Math.floor(Math.random() * chars.length);
+            let targetChar = chars[replaceIdx];
+            let group = kanaGroups.find(g => g.includes(targetChar));
+            
+            if (group) {
+                let candidates = group.filter(c => c !== targetChar);
+                chars[replaceIdx] = candidates[Math.floor(Math.random() * candidates.length)];
+                let distractor = chars.join('');
+                if (distractor !== correctKana) distractors.add(distractor);
+            } else {
+                let rGroup = kanaGroups[Math.floor(Math.random() * kanaGroups.length)];
+                distractors.add(correctKana + rGroup[Math.floor(Math.random() * rGroup.length)]);
+            }
+        }
+        
+        let fallbacks = ['あ', 'い', 'う', 'か', 'き']; let fi = 0;
+        while(distractors.size < count) { distractors.add(correctKana + fallbacks[fi]); fi++; }
+        return Array.from(distractors);
     }
 
     // --- 測驗引擎 ---
@@ -252,6 +296,7 @@
         if(db.config.quizOrder === 'random') quizSet.sort(() => Math.random() - 0.5);
         qIdx = 0; showPage('quiz'); loadQ();
     }
+    
     function loadQ() {
         if(qIdx >= quizSet.length) { alert("測驗結束！"); showPage('home'); return; }
         const w = quizSet[qIdx];
@@ -260,9 +305,11 @@
         document.getElementById('q-result').innerText = ""; 
         document.getElementById('p-bar').style.width = (qIdx / quizSet.length * 100) + "%";
         
+        // 測驗頁面的星星狀態更新 (相容舊版布林值)
         const starBtn = document.getElementById('quiz-star');
-        starBtn.innerText = w.starred ? "★" : "☆";
-        starBtn.classList.toggle('active', !!w.starred);
+        let starState = w.starred === true ? 1 : (w.starred || 0);
+        starBtn.innerText = starState ? "★" : "☆";
+        starBtn.className = "star-btn star-state-" + starState;
 
         if(db.config.autoSpeak) speak(w.kana);
 
@@ -270,10 +317,14 @@
             document.getElementById('spell-container').style.display = 'flex';
             document.getElementById('recognize-container').style.display = 'none';
             qInput = ""; document.getElementById('nativeInput').value = ""; renderSlots();
-        } else {
+        } else if (db.config.quizMode === 'recognize') {
             document.getElementById('spell-container').style.display = 'none';
             document.getElementById('recognize-container').style.display = 'flex';
             renderOptions();
+        } else if (db.config.quizMode === 'kanji') {
+            document.getElementById('spell-container').style.display = 'none';
+            document.getElementById('recognize-container').style.display = 'flex';
+            renderKanjiOptions();
         }
     }
     function onNativeInput(el) { qInput = el.value; renderSlots(); }
@@ -288,13 +339,11 @@
 
         if (qInput === w.kana) {
             triggerVibrate(); document.getElementById('q-result').innerText = "正解！✨"; document.getElementById('q-result').style.color = "var(--success)";
-            save();
-            setTimeout(() => { qIdx++; loadQ(); }, 600);
+            save(); setTimeout(() => { qIdx++; loadQ(); }, 600);
         } else {
             w.wrongCount = (w.wrongCount || 0) + 1;
             document.getElementById('q-result').innerText = "錯誤"; document.getElementById('q-result').style.color = "var(--error)";
-            save();
-            setTimeout(() => { document.getElementById('q-result').innerText = ""; }, 800);
+            save(); setTimeout(() => { document.getElementById('q-result').innerText = ""; }, 800);
         }
     }
     
@@ -304,6 +353,13 @@
         currentOptions = [w, ...distractors.slice(0, 3)].sort(() => Math.random() - 0.5);
         document.getElementById('optionsGrid').innerHTML = currentOptions.map((opt, i) => `<button class="option-btn" style="background:#1e293b; border:1px solid #334155; color:white; padding:18px; border-radius:14px; font-weight:600;" onclick="checkOption(${i}, this)">${opt.kana}</button>`).join('');
     }
+
+    function renderKanjiOptions() {
+        const w = quizSet[qIdx];
+        let distractorStrings = generateSimilarKana(w.kana, 3);
+        currentOptions = [{kana: w.kana}, {kana: distractorStrings[0]}, {kana: distractorStrings[1]}, {kana: distractorStrings[2]}].sort(() => Math.random() - 0.5);
+        document.getElementById('optionsGrid').innerHTML = currentOptions.map((opt, i) => `<button class="option-btn" style="background:#1e293b; border:1px solid #334155; color:white; padding:18px; border-radius:14px; font-weight:600;" onclick="checkOption(${i}, this)">${opt.kana}</button>`).join('');
+    }
     
     function checkOption(idx, btn) {
         let w = quizSet[qIdx];
@@ -311,28 +367,27 @@
 
         if (currentOptions[idx].kana === w.kana) {
             triggerVibrate(); btn.style.background = "var(--success)"; 
-            save();
-            setTimeout(() => { qIdx++; loadQ(); }, 500);
+            save(); setTimeout(() => { qIdx++; loadQ(); }, 500);
         } else {
             w.wrongCount = (w.wrongCount || 0) + 1;
             btn.style.background = "var(--error)"; 
-            save();
-            setTimeout(() => { btn.style.background = "#1e293b"; }, 500);
+            save(); setTimeout(() => { btn.style.background = "#1e293b"; }, 500);
         }
+    }
+
+    function toggleCurrentStar() { 
+        let w = quizSet[qIdx]; 
+        let starState = w.starred === true ? 1 : (w.starred || 0);
+        w.starred = (starState + 1) % 3;
+        loadQ(); save(); 
     }
 
     // --- 動畫與進度系統 ---
     function renderProgressStatic() {
-        const total = db.words.length || 1;
-        const learned = parseInt(db.config.learnedWords) || 0;
+        const total = db.words.length || 1; const learned = parseInt(db.config.learnedWords) || 0;
         const pct = Math.min((learned / total) * 100, 100);
-        
-        const path = document.getElementById('circle-path');
-        const text = document.getElementById('progress-text');
-        
-        path.style.transition = 'none';
-        path.style.strokeDashoffset = 251.2 - (251.2 * pct / 100);
-        text.innerHTML = `${Math.round(pct)}%`;
+        const path = document.getElementById('circle-path'); const text = document.getElementById('progress-text');
+        path.style.transition = 'none'; path.style.strokeDashoffset = 251.2 - (251.2 * pct / 100); text.innerHTML = `${Math.round(pct)}%`;
     }
 
     function animateValue(obj, start, end, duration, decimals) {
@@ -342,101 +397,95 @@
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
             const current = progress * (end - start) + start;
             obj.innerHTML = current.toFixed(decimals) + '%';
-            if (progress < 1) window.requestAnimationFrame(step);
-            else obj.innerHTML = end.toFixed(decimals) + '%';
+            if (progress < 1) window.requestAnimationFrame(step); else obj.innerHTML = end.toFixed(decimals) + '%';
         };
         window.requestAnimationFrame(step);
     }
 
     async function triggerProgressAnimation() {
-        const total = db.words.length || 1;
-        const oldLearned = parseInt(db.config.learnedWords) || 0;
-        
-        // 練度 >= 80% 的單字數量
-        const newLearned = db.words.filter(w => {
-            let tc = w.totalCount || 0;
-            let wc = w.wrongCount || 0;
-            return tc >= 3 && ((tc - wc) / tc) >= 0.8;
-        }).length;
+        const total = db.words.length || 1; const oldLearned = parseInt(db.config.learnedWords) || 0;
+        const newLearned = db.words.filter(w => { let tc = w.totalCount || 0; let wc = w.wrongCount || 0; return tc >= 3 && ((tc - wc) / tc) >= 0.8; }).length;
+        const oldPct = Math.min((oldLearned / total) * 100, 100); const newPct = Math.min((newLearned / total) * 100, 100);
+        const path = document.getElementById('circle-path'); const text = document.getElementById('progress-text'); const container = document.getElementById('anim-container');
 
-        const oldPct = Math.min((oldLearned / total) * 100, 100);
-        const newPct = Math.min((newLearned / total) * 100, 100);
-
-        const path = document.getElementById('circle-path');
-        const text = document.getElementById('progress-text');
-        const container = document.getElementById('anim-container');
-
-        // 初始化
-        path.style.transition = 'none';
-        path.style.strokeDashoffset = 251.2;
-        text.innerHTML = '0%';
-        
+        path.style.transition = 'none'; path.style.strokeDashoffset = 251.2; text.innerHTML = '0%';
         await new Promise(r => setTimeout(r, 50));
-
-        // (1) 從0%跑動到舊進度數值
-        path.style.transition = 'stroke-dashoffset 1s ease-out';
-        path.style.strokeDashoffset = 251.2 - (251.2 * oldPct / 100);
-        animateValue(text, 0, oldPct, 1000, 0);
         
+        path.style.transition = 'stroke-dashoffset 1s ease-out'; path.style.strokeDashoffset = 251.2 - (251.2 * oldPct / 100);
+        animateValue(text, 0, oldPct, 1000, 0);
         await new Promise(r => setTimeout(r, 1200));
 
-        // (2) 放大，移動至新進度數值
         container.style.transform = 'scale(1.25)';
         await new Promise(r => setTimeout(r, 400));
         
-        path.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.25, 1, 0.5, 1)';
-        path.style.strokeDashoffset = 251.2 - (251.2 * newPct / 100);
+        path.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.25, 1, 0.5, 1)'; path.style.strokeDashoffset = 251.2 - (251.2 * newPct / 100);
         animateValue(text, oldPct, newPct, 1500, 0);
-
         await new Promise(r => setTimeout(r, 2000));
 
-        // (3) 縮小並儲存新狀態
         container.style.transform = 'scale(1)';
         await new Promise(r => setTimeout(r, 600));
 
-        db.config.learnedWords = newLearned;
-        save();
+        db.config.learnedWords = newLearned; save();
     }
 
     // --- 清單管理 ---
     function toggleStarredFilter() { starredOnly = !starredOnly; document.getElementById('filter-star').classList.toggle('active', starredOnly); renderList(); }
     function toggleHideJp() { hideJp = !hideJp; document.getElementById('btn-hide-jp').classList.toggle('active', hideJp); renderList(); }
+    function toggleHideKana() { hideKana = !hideKana; document.getElementById('btn-hide-kana').classList.toggle('active', hideKana); renderList(); }
     function toggleHideCn() { hideCn = !hideCn; document.getElementById('btn-hide-cn').classList.toggle('active', hideCn); renderList(); }
+    
+    function toggleListStar(idx, event) { 
+        event.stopPropagation();
+        let starState = db.words[idx].starred === true ? 1 : (db.words[idx].starred || 0);
+        db.words[idx].starred = (starState + 1) % 3; 
+        save(); renderList(); 
+    }
+
+    function toggleWordActions(idx) {
+        const act = document.getElementById('w-actions-' + idx);
+        if(act) act.style.display = act.style.display === 'none' ? 'block' : 'none';
+    }
     
     function renderList() {
         const container = document.getElementById('list-container');
         let words = db.words.map((w, i) => ({...w, originalIdx: i}));
         if (currentFilter !== '全部') words = words.filter(w => w.book === currentFilter);
-        if (starredOnly) words = words.filter(w => w.starred);
+        if (starredOnly) words = words.filter(w => w.starred); // 過濾掉 0 (或 undefined)
         
         container.innerHTML = words.map((w, index) => {
-            let tc = w.totalCount || 0;
-            let wc = w.wrongCount || 0;
-            let cc = tc - wc;
+            let tc = w.totalCount || 0; let wc = w.wrongCount || 0; let cc = tc - wc;
             let isProficient = tc >= 3 && (cc / tc) >= 0.8;
             let profText = tc >= 3 ? Math.round((cc / tc) * 100) + '%' : '新單字';
             let profBg = tc >= 3 ? (isProficient ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)') : 'rgba(255,255,255,0.05)';
             let profColor = tc >= 3 ? (isProficient ? 'var(--success)' : 'var(--hint)') : 'var(--sub-text)';
 
+            let starState = w.starred === true ? 1 : (w.starred || 0);
+
             return `
             <div class="word-card">
-                <input type="checkbox" class="batch-chk" value="${w.originalIdx}" style="display:${isEditMode?'block':'none'}; width:22px; height:22px;">
-                <span class="star-btn ${w.starred?'active':''}" onclick="toggleListStar(${w.originalIdx})">${w.starred?'★':'☆'}</span>
-                
-                <div class="word-info" style="flex:1;">
-                    <span style="color:var(--sub-text); font-size:12px; margin-right:6px; font-weight:bold;">${index + 1}.</span>
-                    <span class="${hideJp ? 'blur-text' : ''}" style="transition: 0.2s;" onclick="this.classList.toggle('revealed')">
-                        <b>${w.display}</b> <small style="color:var(--sub-text); margin-left:5px;">${w.kana}</small>
-                    </span><br>
-                    <span class="${hideCn ? 'blur-text' : ''}" style="font-size:13px; color:var(--sub-text); line-height:20px; transition: 0.2s;" onclick="this.classList.toggle('revealed')">${w.meaning}</span>
+                <div class="word-row" onclick="toggleWordActions(${w.originalIdx})">
+                    
+                    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                        <input type="checkbox" class="batch-chk" value="${w.originalIdx}" style="display:${isEditMode?'block':'none'}; width:20px; height:20px;" onclick="event.stopPropagation()">
+                        <button class="star-btn star-state-${starState}" style="font-size:16px; padding:0; margin:0;" onclick="toggleListStar(${w.originalIdx}, event)">${starState ? '★' : '☆'}</button>
+                        <span class="${hideJp ? 'blur-text' : ''}" style="transition:0.2s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:16px;" onclick="event.stopPropagation(); this.classList.toggle('revealed')"><b>${w.display}</b></span>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; margin-left:12px; text-align:right;">
+                        <span class="${hideKana ? 'blur-text' : ''}" style="transition:0.2s; font-size:13px; color:var(--sub-text);" onclick="event.stopPropagation(); this.classList.toggle('revealed')">${w.kana}</span>
+                        <span class="${hideCn ? 'blur-text' : ''}" style="transition:0.2s; font-size:14px;" onclick="event.stopPropagation(); this.classList.toggle('revealed')">${w.meaning}</span>
+                    </div>
+                    
                 </div>
 
-                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-                    <span class="prof-badge" style="background:${profBg}; color:${profColor};">${profText}</span>
-                    <div class="word-ops" style="display:${isEditMode?'none':'flex'}; gap: 4px;">
-                        <button class="text-action" onclick="speak('${w.kana}')">發音</button>
-                        <button class="text-action" onclick="editWord(${w.originalIdx})">編輯</button>
-                        <button class="text-action del" onclick="deleteWord(${w.originalIdx})">刪除</button>
+                <div id="w-actions-${w.originalIdx}" style="display:none; padding:0 16px 16px 16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed rgba(255,255,255,0.1); padding-top:12px;">
+                        <span class="prof-badge" style="background:${profBg}; color:${profColor};">${profText}</span>
+                        <div style="display:${isEditMode?'none':'flex'}; gap: 8px;">
+                            <button class="text-action" onclick="speak('${w.kana}')">發音</button>
+                            <button class="text-action" onclick="editWord(${w.originalIdx})">編輯</button>
+                            <button class="text-action del" onclick="deleteWord(${w.originalIdx})">刪除</button>
+                        </div>
                     </div>
                 </div>
             </div>`
@@ -445,7 +494,6 @@
         document.getElementById('list-book-filter').innerHTML = ['全部', ...db.books].map(b => `<button class="sq-btn ${currentFilter===b?'active':''}" onclick="currentFilter='${b}'; renderList();">${b}</button>`).join('');
     }
     
-    function toggleListStar(idx) { db.words[idx].starred = !db.words[idx].starred; save(); renderList(); }
     function speakCurrent() { if(quizSet[qIdx]) speak(quizSet[qIdx].kana); }
     function useHint() { if(quizSet[qIdx]) { qInput = quizSet[qIdx].kana; document.getElementById('nativeInput').value = qInput; renderSlots(); } }
 
@@ -460,10 +508,7 @@
         });
         if(pid==='list') renderList();
         if(pid==='home') renderHome();
-        if(pid==='settings') {
-            document.getElementById('set-vibrate').checked = db.config.vibrate;
-            document.getElementById('set-target-words').value = db.words.length || 0;
-        }
+        if(pid==='settings') { document.getElementById('set-vibrate').checked = db.config.vibrate; document.getElementById('set-target-words').value = db.words.length || 0; }
         if(pid==='progress') renderProgressStatic();
     }
     function renderHome() {
@@ -478,6 +523,7 @@
     function updateUI() {
         document.getElementById('mode-spell').classList.toggle('active', db.config.quizMode === 'spell');
         document.getElementById('mode-recognize').classList.toggle('active', db.config.quizMode === 'recognize');
+        document.getElementById('mode-kanji').classList.toggle('active', db.config.quizMode === 'kanji');
         document.getElementById('order-default').classList.toggle('active', db.config.quizOrder === 'default');
         document.getElementById('order-random').classList.toggle('active', db.config.quizOrder === 'random');
     }
@@ -485,21 +531,18 @@
     function setOrder(o) { db.config.quizOrder = o; updateUI(); save(); }
     function toggleQuizConfig(key) { db.config[key] = !db.config[key]; updateUI(); loadQ(); save(); }
     function toggleEditMode() { isEditMode = !isEditMode; document.getElementById('batch-bar').style.display = isEditMode?'flex':'none'; renderList(); }
-    function toggleCurrentStar() { let w = quizSet[qIdx]; w.starred = !w.starred; loadQ(); save(); }
     function doImport() {
         const text = document.getElementById('import-area').value; let b = document.getElementById('import-book-select').value;
         if(b === 'NEW') { b = prompt("單字本名稱？"); if(b) db.books.push(b); else return; }
-        text.split('\n').forEach(l => { const [d, k, m] = l.split('/'); if(d && k && m) db.words.push({ display:d.trim(), kana:k.trim(), meaning:m.trim(), book:b, starred:false, totalCount:0, wrongCount:0 }); });
+        text.split('\n').forEach(l => { const [d, k, m] = l.split('/'); if(d && k && m) db.words.push({ display:d.trim(), kana:k.trim(), meaning:m.trim(), book:b, starred:0, totalCount:0, wrongCount:0 }); });
         save(); alert("匯入完成"); showPage('home');
     }
     function editWord(idx) { const w = db.words[idx]; const d = prompt("單字(含漢字)", w.display); const k = prompt("純假名", w.kana); const m = prompt("中文意思", w.meaning); if(d && k && m) { db.words[idx] = {...w, display:d, kana:k, meaning:m}; save(); renderList(); } }
     function deleteWord(idx) { if(confirm("確定刪除此單字？")) { db.words.splice(idx, 1); save(); renderList(); } }
     function confirmClearData() { if(confirm("確定清空？")) { localStorage.clear(); location.reload(); } }
 
-    // 初始化確保變數存在
     if(db.config.learnedWords === undefined) { db.config.learnedWords = 0; }
-    save();
-    renderHome();
+    save(); renderHome();
 </script>
 </body>
 </html>
